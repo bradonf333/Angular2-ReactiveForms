@@ -23,7 +23,7 @@ export class CustomerComponent implements OnInit {
     this.customerForm = this.fb.group({
       firstName: '',
       lastName: '',
-      email: 'hello',
+      email: '',
       sendCatalog: true
     });
   }
