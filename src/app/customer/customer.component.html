@@ -17,7 +17,8 @@
                    id="firstNameId" 
                    type="text" 
                    placeholder="First Name (required)" 
-                   required minlength="3" 
+                   required 
+                   minlength="3" 
                    formControlName="firstName"/>
             <span class="help-block" *ngIf="(firstName.touched || firstName.dirty) && firstName.errors">
                           <span *ngIf="firstName.errors.required">
