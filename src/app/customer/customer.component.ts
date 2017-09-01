@@ -16,6 +16,8 @@ export class CustomerComponent implements OnInit {
   lastName = new FormControl();
   email = new FormControl();
   sendCatalog = new FormControl(true);
+  phone = new FormControl();
+  notification = new FormControl();
 
   constructor(private fb: FormBuilder) { }
 
@@ -30,6 +32,8 @@ export class CustomerComponent implements OnInit {
       email: ['',
         [Validators.required, Validators.pattern('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+')]
       ],
+      phone: '',
+      notification: 'email',
       sendCatalog: true
     });
   }
@@ -45,6 +49,15 @@ export class CustomerComponent implements OnInit {
       lastName: 'Fredrickson',
       sendCatalog: false
     });
+
+    // this.myControl.setValidators(Validators.required);
+    // this.myControl.setValidators([Validators.required,
+    //                               Validators.maxLength(30)]);
+
+    // this.myControl.clearValidators();
+
+    // this.myControl.updateValueAndValidity();
+
   }
 
 }
