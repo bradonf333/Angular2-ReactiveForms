@@ -49,15 +49,18 @@ export class CustomerComponent implements OnInit {
       lastName: 'Fredrickson',
       sendCatalog: false
     });
+  }
 
-    // this.myControl.setValidators(Validators.required);
-    // this.myControl.setValidators([Validators.required,
-    //                               Validators.maxLength(30)]);
+  setNotification(notifyVia: string): void {
 
-    // this.myControl.clearValidators();
+    const phoneControl = this.customerForm.get('phone');
 
-    // this.myControl.updateValueAndValidity();
-
+    if (notifyVia === 'text') {
+      phoneControl.setValidators(Validators.required);
+    } else {
+      phoneControl.clearValidators();
+    }
+    phoneControl.updateValueAndValidity();
   }
 
 }
