@@ -9,6 +9,23 @@ import {
   ValidatorFn
 } from '@angular/forms';
 
+function emailMatcher(c: AbstractControl) {
+  const emailControl = c.get('email');
+  const confirmEmailControl = c.get('confirmEmail');
+  if (emailControl.pristine || confirmEmailControl.pristine) {
+    return null;
+  }
+  if (emailControl.value === confirmEmailControl.value) {
+    return null;
+  }
+  return { 'match': true };
+}
+
+/**
+ * Checks to make sure the users input is within the given range
+ * @param min
+ * @param max
+ */
 function ratingRange(min: number, max: number): ValidatorFn {
   return (c: AbstractControl): { [key: string]: boolean } | null => {
     if (c.value !== undefined && (isNaN(c.value) || c.value < min || c.value > max)) {
@@ -46,13 +63,14 @@ export class CustomerComponent implements OnInit {
       lastName: ['',
         [Validators.required, Validators.maxLength(50)]
       ],
-      email: ['',
-        [Validators.required, Validators.pattern('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+')]
-      ],
+      emailGroup: this.fb.group({
+        email: ['', [Validators.required, Validators.pattern('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+')]],
+        confirmEmail: ['', Validators.required]
+      }, {validator: emailMatcher}),
       phone: '',
       notification: 'email',
       rating: ['', ratingRange(1, 5)],
-      sendCatalog: true
+      sendCatalog: true,
     });
   }
 
