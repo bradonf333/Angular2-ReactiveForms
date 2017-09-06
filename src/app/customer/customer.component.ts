@@ -44,6 +44,12 @@ export class CustomerComponent implements OnInit {
 
   customerForm: FormGroup;
   customer: Customer = new Customer();
+  emailMessage: string;
+
+  private validationMessages = {
+    required: 'Please enter your email address.',
+    pattern: 'Please enter a valid email address'
+  };
 
   firstName = new FormControl();
   lastName = new FormControl();
@@ -66,7 +72,7 @@ export class CustomerComponent implements OnInit {
       emailGroup: this.fb.group({
         email: ['', [Validators.required, Validators.pattern('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+')]],
         confirmEmail: ['', Validators.required]
-      }, {validator: emailMatcher}),
+      }, { validator: emailMatcher }),
       phone: '',
       notification: 'email',
       rating: ['', ratingRange(1, 5)],
@@ -74,12 +80,33 @@ export class CustomerComponent implements OnInit {
     });
 
     this.customerForm.get('notification').valueChanges
-    .subscribe(value => this.setNotification(value));
+      .subscribe(value => this.setNotification(value));
+
+    // Wanted to see what the code right above this would look like
+    // if I created a const like we did on the emailControl valueChanges
+    //
+    // const notificationControl = this.customerForm.get('notification');
+    // notificationControl.valueChanges.subscribe(value =>
+    //   this.setNotification(value));
+
+    const emailControl = this.customerForm.get('emailGroup.email');
+    emailControl.valueChanges.subscribe(value =>
+      this.setMessage(emailControl));
   }
 
   save() {
     console.log(this.customerForm);
     console.log('Saved: ' + JSON.stringify(this.customerForm.value));
+  }
+
+  setMessage(c: AbstractControl): void {
+    this.emailMessage = '';
+    console.log(Object.keys(c.errors));
+    console.log(Object.keys(this.validationMessages));
+    if ((c.touched || c.dirty) && c.errors) {
+      this.emailMessage = Object.keys(c.errors).map(key =>
+        this.validationMessages[key]).join(' ');
+    }
   }
 
   populateTestData(): void {
