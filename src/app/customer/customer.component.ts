@@ -47,8 +47,22 @@ export class CustomerComponent implements OnInit {
   emailMessage: string;
 
   private validationMessages = {
-    required: 'Please enter your email address.',
-    pattern: 'Please enter a valid email address'
+    email: {
+      'required': 'Email is required',
+      'pattern': 'Please enter a valid email address'
+    },
+    // required: 'Please enter your email address.',
+    // pattern: 'Please enter a valid email address'
+  };
+
+  formErrors = {
+    'firstName': '',
+    'lastName': '',
+    'phone': '',
+    'emailGroup': {
+      'email': '',
+      'confirmEmail': ''
+    }
   };
 
   firstName = new FormControl();
@@ -101,8 +115,9 @@ export class CustomerComponent implements OnInit {
 
   setMessage(c: AbstractControl): void {
     this.emailMessage = '';
-    console.log(Object.keys(c.errors));
-    console.log(Object.keys(this.validationMessages));
+    console.log(c.parent.controls);
+    console.log('c.errors: ' + Object.keys(c.errors));
+    console.log('this.validationMessages: ' + Object.keys(this.validationMessages));
     if ((c.touched || c.dirty) && c.errors) {
       this.emailMessage = Object.keys(c.errors).map(key =>
         this.validationMessages[key]).join(' ');
@@ -128,5 +143,4 @@ export class CustomerComponent implements OnInit {
     }
     phoneControl.updateValueAndValidity();
   }
-
 }
