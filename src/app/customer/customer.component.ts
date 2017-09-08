@@ -9,6 +9,11 @@ import {
   ValidatorFn
 } from '@angular/forms';
 
+/**
+ * Makes sure the email and confirm email FormControls match each other.
+ * If not return a validation object called match.
+ * @param c
+ */
 function emailMatcher(c: AbstractControl) {
   const emailControl = c.get('email');
   const confirmEmailControl = c.get('confirmEmail');
@@ -45,29 +50,50 @@ export class CustomerComponent implements OnInit {
   customerForm: FormGroup;
   customer: Customer = new Customer();
   emailMessage: string;
+  confirmEmailMessage: string;
+
+  private emailMessages = {
+    'required': 'Email is required',
+    'pattern': 'Please enter a valid email address'
+  };
+
+  private confirmEmailMessages = {
+    'required': 'Confirm Email is required'
+  };
 
   private validationMessages = {
-    email: {
-      'required': 'Email is required',
-      'pattern': 'Please enter a valid email address'
+    'firstName': {
+      'required': 'First Name is required',
+      'minlength': 'Minimum length is 3'
     },
-    // required: 'Please enter your email address.',
-    // pattern: 'Please enter a valid email address'
+    'lastName': {
+      'required': 'Last Name is required',
+      'maxlength': 'Max length is 50'
+    },
+    'rating': {
+      'required': 'Rating is required',
+      'range': 'Please rate your experience from 1 to 5'
+    },
+    'phone': {
+      'required': 'Phone is required'
+    },
+    'emailGroup': {
+      'match': 'Confirm email does not match the email address.'
+    }
   };
 
   formErrors = {
     'firstName': '',
     'lastName': '',
+    'rating': '',
     'phone': '',
-    'emailGroup': {
-      'email': '',
-      'confirmEmail': ''
-    }
+    'emailGroup': ''
   };
 
   firstName = new FormControl();
   lastName = new FormControl();
   email = new FormControl();
+  confirmEmail = new FormControl();
   sendCatalog = new FormControl(true);
   phone = new FormControl();
   notification = new FormControl();
@@ -76,6 +102,31 @@ export class CustomerComponent implements OnInit {
   constructor(private fb: FormBuilder) { }
 
   ngOnInit() {
+    this.buildForm();
+
+    this.customerForm.get('notification').valueChanges
+      .subscribe(value => this.setNotification(value));
+
+    // Wanted to see what the code right above this would look like
+    // if I created a const like we did on the emailControl valueChanges
+    //
+    // const notificationControl = this.customerForm.get('notification');
+    // notificationControl.valueChanges.subscribe(value =>
+    //   this.setNotification(value));
+
+    const emailControl = this.customerForm.get('emailGroup.email');
+    emailControl.valueChanges.subscribe(value =>
+      this.setEmailMessage(emailControl));
+
+    const confirmEmailControl = this.customerForm.get('emailGroup.confirmEmail');
+    confirmEmailControl.valueChanges.subscribe(value =>
+      this.setConfirmEmailMessage(confirmEmailControl));
+  }
+
+  /**
+   * Builds the customer form
+   */
+  buildForm() {
     this.customerForm = this.fb.group({
       firstName: ['',
         [Validators.required, Validators.minLength(3)]
@@ -93,37 +144,50 @@ export class CustomerComponent implements OnInit {
       sendCatalog: true,
     });
 
-    this.customerForm.get('notification').valueChanges
-      .subscribe(value => this.setNotification(value));
+    // Watches for all changes on the customer form
+    this.customerForm.valueChanges
+      .subscribe(data => this.onValueChanged(data));
 
-    // Wanted to see what the code right above this would look like
-    // if I created a const like we did on the emailControl valueChanges
-    //
-    // const notificationControl = this.customerForm.get('notification');
-    // notificationControl.valueChanges.subscribe(value =>
-    //   this.setNotification(value));
-
-    const emailControl = this.customerForm.get('emailGroup.email');
-    emailControl.valueChanges.subscribe(value =>
-      this.setMessage(emailControl));
+    // Resets the validation messages
+    this.onValueChanged();
   }
 
+  /**
+   * When the save button is pressed on the form log info to console
+   */
   save() {
     console.log(this.customerForm);
     console.log('Saved: ' + JSON.stringify(this.customerForm.value));
   }
 
-  setMessage(c: AbstractControl): void {
+  /**
+   * Sets the validation message for the email input
+   * @param c
+   */
+  setEmailMessage(c: AbstractControl): void {
     this.emailMessage = '';
-    console.log(c.parent.controls);
-    console.log('c.errors: ' + Object.keys(c.errors));
-    console.log('this.validationMessages: ' + Object.keys(this.validationMessages));
     if ((c.touched || c.dirty) && c.errors) {
       this.emailMessage = Object.keys(c.errors).map(key =>
-        this.validationMessages[key]).join(' ');
+        this.emailMessages[key]).join(' ');
     }
   }
 
+  /**
+   * Sets the validation message for the confirm email input
+   * @param c
+   */
+  setConfirmEmailMessage(c: AbstractControl): void {
+    this.confirmEmailMessage = '';
+    if ((c.touched || c.dirty) && c.errors) {
+      console.log(c.errors);
+      this.confirmEmailMessage = Object.keys(c.errors).map(key =>
+        this.confirmEmailMessages[key]).join(' ');
+    }
+  }
+
+  /**
+   * Changes values for certain fields of the form
+   */
   populateTestData(): void {
     this.customerForm.patchValue({
       firstName: 'Bradon',
@@ -132,6 +196,11 @@ export class CustomerComponent implements OnInit {
     });
   }
 
+  /**
+   * Updates the Validators for the phone FormControl
+   * if the user changes the Notifications radio button.
+   * @param notifyVia
+   */
   setNotification(notifyVia: string): void {
 
     const phoneControl = this.customerForm.get('phone');
@@ -143,4 +212,43 @@ export class CustomerComponent implements OnInit {
     }
     phoneControl.updateValueAndValidity();
   }
+
+  /**
+   * Loops through all FormControls in the CustomerForm and sets the
+   * validation message when appropriate.
+   * @param data
+   */
+  onValueChanged(data?: any) {
+
+    // Make sure the form is valid
+    if (!this.customerForm) {
+      return;
+    }
+
+    // Variable for the form
+    const form = this.customerForm;
+
+    // Loop through the form
+    for (const field in this.formErrors) {
+      // TsLint made me have this if statement
+      if (this.formErrors.hasOwnProperty(field)) {
+
+        // Reset the values in the formErrors property and get the current FormControl
+        this.formErrors[field] = '';
+        const control = form.get(field);
+
+        // Check if the FormControl has been touched or dirty and is not valid
+        // If so set the message in the formErrors property.
+        if (control && (control.touched || control.dirty) && !control.valid) {
+          const messages = this.validationMessages[field];
+          for (const key in control.errors) {
+            if (control.errors.hasOwnProperty(key)) {
+              this.formErrors[field] += messages[key] + ' ';
+            }
+          }
+        }
+      }
+    }
+  } // Ends onValueChanged
+
 }
