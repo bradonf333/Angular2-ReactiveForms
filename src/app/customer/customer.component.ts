@@ -8,6 +8,7 @@ import {
   AbstractControl,
   ValidatorFn
 } from '@angular/forms';
+import 'rxjs/add/operator/debounceTime';
 
 /**
  * Makes sure the email and confirm email FormControls match each other.
@@ -115,12 +116,14 @@ export class CustomerComponent implements OnInit {
     //   this.setNotification(value));
 
     const emailControl = this.customerForm.get('emailGroup.email');
-    emailControl.valueChanges.subscribe(value =>
-      this.setEmailMessage(emailControl));
+    emailControl.valueChanges
+      .debounceTime(1000)
+      .subscribe(value => this.setEmailMessage(emailControl));
 
     const confirmEmailControl = this.customerForm.get('emailGroup.confirmEmail');
-    confirmEmailControl.valueChanges.subscribe(value =>
-      this.setConfirmEmailMessage(confirmEmailControl));
+    confirmEmailControl.valueChanges
+      .debounceTime(1000)
+      .subscribe(value => this.setConfirmEmailMessage(confirmEmailControl));
   }
 
   /**
@@ -146,6 +149,7 @@ export class CustomerComponent implements OnInit {
 
     // Watches for all changes on the customer form
     this.customerForm.valueChanges
+      .debounceTime(1000)
       .subscribe(data => this.onValueChanged(data));
 
     // Resets the validation messages
