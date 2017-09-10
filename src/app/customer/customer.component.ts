@@ -6,7 +6,8 @@ import {
   FormBuilder,
   Validators,
   AbstractControl,
-  ValidatorFn
+  ValidatorFn,
+  FormArray
 } from '@angular/forms';
 import 'rxjs/add/operator/debounceTime';
 
@@ -52,6 +53,11 @@ export class CustomerComponent implements OnInit {
   customer: Customer = new Customer();
   emailMessage: string;
   confirmEmailMessage: string;
+
+  // Property getter
+  get addresses(): FormArray {
+    return <FormArray>this.customerForm.get('addresses');
+  }
 
   private emailMessages = {
     'required': 'Email is required',
@@ -145,14 +151,7 @@ export class CustomerComponent implements OnInit {
       notification: 'email',
       rating: ['', ratingRange(1, 5)],
       sendCatalog: true,
-      addresses: this.fb.group({
-        addressType: 'home',
-        street1: '',
-        street2: '',
-        city: '',
-        state: '',
-        zip: ''
-      })
+      addresses: this.fb.array([ this.buildAddress() ])
     });
 
     // Watches for all changes on the customer form
@@ -195,6 +194,20 @@ export class CustomerComponent implements OnInit {
       this.confirmEmailMessage = Object.keys(c.errors).map(key =>
         this.confirmEmailMessages[key]).join(' ');
     }
+  }
+
+  /**
+   * Build a nested FormGroup for address inputs
+   */
+  buildAddress(): FormGroup {
+    return this.fb.group({
+      addressType: 'home',
+      street1: '',
+      street2: '',
+      city: '',
+      state: '',
+      zip: ''
+    });
   }
 
   /**
