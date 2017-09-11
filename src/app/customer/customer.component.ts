@@ -197,6 +197,13 @@ export class CustomerComponent implements OnInit {
   }
 
   /**
+   * Add a new Address FormGroup to the addresses FormArray
+   */
+  addAddress(): void {
+    this.addresses.push(this.buildAddress());
+  }
+
+  /**
    * Build a nested FormGroup for address inputs
    */
   buildAddress(): FormGroup {
